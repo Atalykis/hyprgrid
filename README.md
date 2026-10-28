@@ -292,12 +292,12 @@ still to come (`on_step`), are in
 [docs/design.md](docs/design.md). A rule can drive the zoom too
 (`drive = { wheel = "zoom" }`: zoomed all the way out, that is the overview).
 
-With two monitors, they share one grid by default, split into a region
-each along a seam that follows their physical layout: each region grows
-everywhere but across the seam, and from the cell next to the seam, focus
-(or a carried window, or a moved workspace) crosses to the other monitor's
-current workspace. The overview shows the whole grid from each monitor,
-with the seam and a frame over each monitor's workspace.
+With multiple monitors, they share one grid by default, split into a region
+each along their widest physical axis: each region grows everywhere but
+across its seams, and from a cell next to a seam, focus (or a carried window,
+or a moved workspace) crosses to the neighbouring monitor's current
+workspace. The overview shows the whole grid from each monitor, with the
+seams and a frame over each monitor's workspace.
 `topology()` changes that, and `step(dx, dy)` answers where a move leads
 (`"workspace"`, `"new"`, `"monitor"` or `"none"`), for your own actions:
 
@@ -319,13 +319,17 @@ it into your config, change it, and call your copy's `setup()` instead.
 ## How the grid works
 
 - **Placement.** A workspace gets a cell the first time hyprgrid sees it:
-  workspace `n` from 1 to 99 goes to column 0, row `n - 1`, or the nearest
-  free cell. Workspaces created by stepping into an empty cell get that cell
-  (their ids start at 100). Named and special workspaces aren't on the grid.
+  workspace `n` from 1 to 99 goes to column 0, row `n - 1` on a board without
+  regions. With monitor regions, each monitor's numbered workspaces start at
+  row 0 next to its seam, then fill the next free rows. Workspaces created by
+  stepping into an empty cell get that cell (their ids start at 100). Named
+  and special workspaces aren't on the grid.
 - **Where you can go.** A cell can be entered if it holds a workspace, or if
   it's empty and next to (not diagonal from) a workspace with windows.
 - **Memory.** The layout is saved in `$XDG_RUNTIME_DIR/hyprgrid`, so reloading
-  the plugin keeps it. It's forgotten when you log out.
+  the plugin keeps it. It's forgotten when you log out. An existing saved
+  layout is not rearranged when the default placement changes: to start over,
+  unload the plugin, remove that file, and load it again.
 - **The camera.** Hyprland still performs every switch. hyprgrid only takes
   over the animation, starting from wherever the old workspace is on screen,
   so switches in quick succession chain smoothly. Each monitor has its own
